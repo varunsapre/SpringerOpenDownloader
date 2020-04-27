@@ -10,7 +10,9 @@ ___________________________
 -- unicodedata
 -- requests
 ___________________________
-### Run downloader: `python3 download_books.py Books.json`
+### Run downloader:
+Without multiple downloads: `python3 download_books.py Books.json`
+With multiple downloads: `python3 download_books.py Books.json -a <num_simultaneous_downloads>`
 ___________________________
 ### Converting Data from PDF to JSON (for `Books.json`):
 1) `python3 compile_json.py <PDF_filename>` (Output is `raw.json` , `clean.json` )
