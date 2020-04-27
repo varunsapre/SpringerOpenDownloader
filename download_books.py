@@ -6,10 +6,14 @@ import wget
 # ------------------------------------------------------------------------------------
 def download_books_worker(book):
     book = book_details[book]
-    book_filename = f"Books/{book['book_title']} - {book['author']} - {book['edition']}.pdf"
-    print (f"Proc:{os.getpid()} = downloading: {book['book_title']} by {book['author']}")
-    wget.download(book["pdf_url"], out=book_filename)
-    print ("\n")
+    book_filename = f"Books/{book['book_title'].replace('/', ' or ')} - {book['author']} - {book['edition']}.pdf"
+    if not os.path.exists(book_filename):
+        print (f"Proc:{os.getpid()} = downloading: {book['book_title']} by {book['author']}")
+        wget.download(book["pdf_url"], out=book_filename)
+        print ("\n")
+        return "OK"
+    else:
+        return "EXISTS"
 
 def download_books(book_details, _async):
     # check if the "compiled" key is present
