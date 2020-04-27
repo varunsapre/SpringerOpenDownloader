@@ -1,10 +1,16 @@
 import argparse
 import json
 import os
-
+from multiprocessing import Pool
 import wget
 # ------------------------------------------------------------------------------------
-def download_books(book_details):
+def download_books_worker(book):
+    book = book_details[book]
+    book_filename = f"Books/{book['book_title']} - {book['author']} - {book['edition']}.pdf"
+    print (f"downloading: {book['book_title']} by {book['author']}")
+    wget.download(book["pdf_url"], out=book_filename)
+
+def download_books(book_details, _async):
     # check if the "compiled" key is present
     # this is done so that an uncompiled json is not mistakenly parsed in this function
     try:
@@ -13,19 +19,17 @@ def download_books(book_details):
     except Exception as ex:
         print ("JSON provided was not compiled, please verify that json file contents were compiled using the script!")
         return
+    os.makedirs("./Books", exist_ok=True)
 
-    for isbn in book_details:
-        if isbn != True:
-            book = book_details[isbn]
-            book_filename = f"{book['book_title']} - {book['author']} - {book['edition']}.pdf"
-            print (f"downloading: {book['book_title']} by {book['author']}")
-            wget.download(book["pdf_url"], out=book_filename)
-            print("\n")
+    # by default async will be 1, so only 1 worker will download
+    with Pool(_async) as p:
+        print(p.map(download_books_worker, book_details))
 
 # ------------------------------------------------------------------------------------
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Script to download and save springer books (from PDF/JSON)')
     parser.add_argument('source', help="Source file provided is a compiled json file")
+    parser.add_argument('-a', '--async',type=int, default=1, dest="num_async_workers", help="Source file provided is a compiled json file")
     args = parser.parse_args()
 
     # check parser args
@@ -35,5 +39,5 @@ if __name__ == "__main__":
 
     with open(args.source, "r") as fread:
         book_details = json.load(fread)
-
-    download_books(book_details)
+    print (f"Downloading using the power of {args.num_async_workers} worker(s)..")
+    download_books(book_details, args.num_async_workers)
